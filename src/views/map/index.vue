@@ -61,12 +61,32 @@
     mounted() {
       const map = new AMap.Map('mapWrapper', {
         enableHighAccuracy: true,
+        resizeEnable: true,
+        pitch: 75, // 地图俯仰角度，有效范围 0 度- 83 度
+        viewMode: '3D',
         zoom: 20
       })
-      AMap.plugin('AMap.ToolBar', function() { // 异步加载插件
+      map.setMapStyle('amap://styles/blue')
+
+      var clickHandler = function(e) {
+        console.log('您在[ ' + e.lnglat.getLng() + ',' + e.lnglat.getLat() + ' ]的位置点击了地图！')
+      }
+      map.on('click', clickHandler)
+      AMap.plugin(['AMap.ToolBar', 'AMap.MapType'], function() { // 异步加载插件
         var toolbar = new AMap.ToolBar()
+        var mapType = new AMap.MapType()
         map.addControl(toolbar)
+        map.addControl(mapType)
       })
+
+      var marker = new AMap.Marker({
+        position: [120.619217, 31.29852], // 基点位置
+        draggable: true, // 是否可拖动
+        offset: new AMap.Pixel(-17, -42), // 相对于基点的偏移位置
+        content: '<div class="marker-route marker-marker-bus-from"></div>'
+      })
+
+      map.add(marker)
     },
     created() {
 
