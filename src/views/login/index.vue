@@ -192,7 +192,7 @@ $light_gray:#eee;
     width: 520px;
     padding: 35px 35px 15px 35px;
     margin: 120px auto;
-    background: rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.8);
     border-radius: 5px;
   }
   .tips {

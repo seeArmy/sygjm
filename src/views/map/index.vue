@@ -7,11 +7,16 @@
               <div class="map-wrapper" id="mapWrapper"></div>
               <div class="map-message">
                 <div class="message-frame">
-                  <p>您正在与XXX聊天</p>
-                  <div class="message-dialog"></div>
-                  <div class="message-input">
-                    <input type="text" placeholder="请输入消息"/>
+                  <p>消息上报列表:</p>
+                  <div class="message-dialog">
+                    <p class="message-item" v-for="item in msgs">{{item.sendUser}} [{{item.Time}}]: {{item.Content}}
+                      <el-button size="mini" type="danger" style="margin-left: 20px;">消息上报
+                      </el-button>
+                    </p>
                   </div>
+                  <!--<div class="message-input">-->
+                    <!--<input type="text" placeholder="请输入消息"/>-->
+                  <!--</div>-->
                 </div>
               </div>
             </div>
@@ -23,7 +28,7 @@
           </div>
           <el-tabs class="persion-items" v-model="persionType" type="border-card">
             <el-tab-pane v-for="item in persionTypes" :label="item.label" :key='item.key' :name="item.key">
-              <el-tree :data="persions" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+              <el-tree :data="item.users" :props="defaultProps" @node-click="drawLineByUser"></el-tree>
             </el-tab-pane>
           </el-tabs>
         </el-col>
@@ -34,24 +39,17 @@
 </template>
 
 <script>
+  import { getPositionByUserId, getAllUserTypes, freshMessage } from '@/api/map'
   export default {
     name: 'index',
     data() {
       return {
-        persionTypes: [{ label: '民兵', key: '1' }, { label: '警察', key: '2' }, { label: '武警', key: '3' }],
-        persionType: '1',
-        persions: [{
-          label: '当前民兵在线人数：20',
-          children: [{
-            label: '张三'
-          }, {
-            label: '李四'
-          }, {
-            label: '王五'
-          }, {
-            label: '赵六'
-          }]
-        }],
+        persionTypes: [],
+        persionType: null,
+        map: null,
+        timer: null,
+        msgTimer: null,
+        msgs: [],
         defaultProps: {
           children: 'children',
           label: 'label'
@@ -59,41 +57,122 @@
       }
     },
     mounted() {
-      const map = new AMap.Map('mapWrapper', {
-        enableHighAccuracy: true,
-        resizeEnable: true,
-        pitch: 75, // 地图俯仰角度，有效范围 0 度- 83 度
-        viewMode: '3D',
-        zoom: 20
-      })
-      map.setMapStyle('amap://styles/blue')
-
-      var clickHandler = function(e) {
-        console.log('您在[ ' + e.lnglat.getLng() + ',' + e.lnglat.getLat() + ' ]的位置点击了地图！')
-      }
-      map.on('click', clickHandler)
-      AMap.plugin(['AMap.ToolBar', 'AMap.MapType'], function() { // 异步加载插件
-        var toolbar = new AMap.ToolBar()
-        var mapType = new AMap.MapType()
-        map.addControl(toolbar)
-        map.addControl(mapType)
-      })
-
-      var marker = new AMap.Marker({
-        position: [120.619217, 31.29852], // 基点位置
-        draggable: true, // 是否可拖动
-        offset: new AMap.Pixel(-17, -42), // 相对于基点的偏移位置
-        content: '<div class="marker-route marker-marker-bus-from"></div>'
-      })
-
-      map.add(marker)
-    },
+      this.initMap()
+      this.getAllUserTypes()
+      this.freshMessage()
+  },
     created() {
 
     },
     methods: {
-      handleNodeClick(data) {
-        console.log(data)
+      getPositionByUserId(id, cb) {
+        getPositionByUserId({ id: id }).then(response => {
+          const paths = response.data.points
+          cb(paths)
+        })
+      },
+      getAllUserTypes() {
+        getAllUserTypes().then(response => {
+          const types = response.data.points
+          const persionTypes = []
+          types.forEach((type) => {
+            const persions = { label: '当前' + type.TypeName + '在线人数：' + type.users.length }
+            persions.children = []
+            type.users.forEach((user) => {
+              persions.children.push({
+                label: user.userName,
+                id: user.UserId,
+                x: user.x,
+                y: user.y,
+                pic: user.Headportrait
+              })
+            })
+            persionTypes.push({ label: type.TypeName, key: type.TypeId + '', users: [persions] })
+          })
+          this.persionTypes = persionTypes
+          this.persionType = this.persionTypes.length ? this.persionTypes[0].key : null
+        })
+      },
+      initMap() {
+        this.map = new AMap.Map('mapWrapper', {
+          enableHighAccuracy: true,
+          resizeEnable: true,
+          zoom: 14
+        })
+        this.map.setMapStyle('amap://styles/blue')
+
+        var clickHandler = function(e) {
+          console.log('您在[ ' + e.lnglat.getLng() + ',' + e.lnglat.getLat() + ' ]的位置点击了地图！')
+        }
+        this.map.on('click', clickHandler)
+        AMap.plugin(['AMap.ToolBar', 'AMap.MapType', 'AMap.GraspRoad'], () => { // 异步加载插件
+          var toolbar = new AMap.ToolBar()
+          var mapType = new AMap.MapType()
+          this.map.addControl(toolbar)
+          this.map.addControl(mapType)
+        })
+      },
+      drawLineByUser(user) {
+        if (user.id) {
+          this.map.setZoom(14)
+          this.map.setCenter([user.x, user.y])
+          setTimeout(() => {
+            this.map.setZoom(18)
+          }, 500)
+          this.drawLineByUserMethod(user)
+          this.freshPosition(user)
+        }
+      },
+      drawLineByUserMethod(user, cb) {
+        this.map.clearMap()
+        this.drawPosition(user)
+        this.getPositionByUserId(user.id, (pathParam) => {
+          var path1 = []
+          for (var i = 0; i < pathParam.length; i += 1) {
+            path1.push([pathParam[i].x, pathParam[i].y])
+          }
+          var oldLine = new AMap.Polyline({
+            path: path1,
+            strokeWeight: 3,
+            strokeOpacity: 1,
+            strokeColor: 'red'
+          })
+          this.map.add(oldLine)
+          if (cb)cb()
+        })
+      },
+      drawPosition(user) {
+        var marker = new AMap.Marker({
+          position: [user.x, user.y], // 基点位置
+          draggable: false, // 是否可拖动
+          offset: new AMap.Pixel(-17, -42), // 相对于基点的偏移位置
+          content: '<div class="marker-route" style="background: url(' + user.pic + ');background-size: contain;"></div>'
+        })
+        this.map.add(marker)
+      },
+      freshPosition(user) {
+        clearTimeout(this.timer)
+        this.timer = setTimeout(() => {
+          this.drawLineByUserMethod(user, () => {
+            this.freshPosition(user)
+          })
+        }, 10000)
+      },
+      freshMessage() {
+        clearTimeout(this.msgTimer)
+        this.msgTimer = setTimeout(() => {
+          this.freshMessageMethod(() => {
+            this.freshMessage()
+          })
+        }, 5000)
+      },
+      freshMessageMethod(cb) {
+        freshMessage().then(response => {
+          this.msgs = response.data.result.rows
+          if (cb) cb()
+        }).catch(() => {
+          if (cb) cb()
+        })
       }
     }
   }
@@ -132,10 +211,17 @@
               position: relative;
               .message-dialog{
                 min-height: 150px;
+                max-height: 150px;
+                overflow: auto;
                 width: 100%;
                 background: #ebe9e9;
                 border: 1px solid #AAAAAA;
                 border-radius: 8px;
+                .message-item{
+                  padding: 5px 0;
+                  margin: 0;
+                  text-indent: 10px;
+                }
               }
               .message-input{
                 width: 100%;

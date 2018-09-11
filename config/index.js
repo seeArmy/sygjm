@@ -11,7 +11,7 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {'/cms': {
-        target: 'http://120.27.111.37:8088',
+        target: 'http://120.27.111.37:8087',
         secure: false
       }},
 
@@ -69,7 +69,7 @@ module.exports = {
      * then assetsPublicPath should be set to "/bar/".
      * In most cases please use '/' !!!
      */
-    assetsPublicPath: '/vue-element-admin/', // If you are deployed on the root path, please use '/'
+    assetsPublicPath: '', // If you are deployed on the root path, please use '/'
 
     /**
      * Source Maps
