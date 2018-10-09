@@ -7,10 +7,11 @@ export function getPositionByUserId(query) {
     params: query
   })
 }
-export function getAllUserTypes() {
+export function getAllUserTypes(query) {
   return request({
     url: '/cms/usertype/getalltypeusers',
-    method: 'post'
+    method: 'post',
+    params: query
   })
 }
 export function freshMessage() {

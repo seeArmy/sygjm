@@ -213,9 +213,9 @@ export const asyncRouterMap = [
   },
   {
     path: '/anjian',
+    name: 'anjian',
     component: Layout,
     redirect: '/anjian/user',
-    name: 'anjian',
     meta: {
       title: '查询统计',
       icon: 'chart'
@@ -224,6 +224,100 @@ export const asyncRouterMap = [
       { path: 'user', name: 'yonghu', meta: { title: '用户统计' }},
       { path: 'role', name: 'luxian', meta: { title: '路线统计' }},
       { path: 'actionGroup', name: 'anqing', meta: { title: '案情统计' }}
+    ]
+  },
+  {
+    path: '/news',
+    name: 'news',
+    component: Layout,
+    redirect: '/news/fabu',
+    meta: {
+      title: '新闻管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'fabu', name: 'news_fabu', meta: { title: '发布新闻' }},
+      { path: 'list', name: 'news_list', meta: { title: '新闻列表' }},
+      { path: 'bankuai', name: 'news_bankuai', meta: { title: '板块管理' }}
+    ]
+  },
+  {
+    path: '/minbin',
+    name: 'minbin',
+    component: Layout,
+    redirect: '/minbin/list',
+    meta: {
+      title: '民兵管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'list', name: 'minbin_fabu', meta: { title: '民兵列表查询' }},
+      { path: 'add', name: 'minbin_list', meta: { title: '新增民兵' }},
+      { path: 'ruwu', name: 'minbin_ruwu', meta: { title: '大学生入伍管理' }},
+      { path: 'fenxi', name: 'minbin_fenxi', meta: { title: '民兵统计分析' }},
+      { path: 'zhuandui', name: 'minbin_zhuandui', meta: { title: '民兵转队' }}
+    ]
+  },
+  {
+    path: '/zhengwu',
+    name: 'zhengwu',
+    component: Layout,
+    redirect: '/zhengwu/fabu',
+    meta: {
+      title: '政务管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'fabu', name: 'zhengwu_fabu', meta: { title: '政务消息发布' }},
+      { path: 'fagui', name: 'zhengwu_fagui', meta: { title: '法规管理' }},
+      { path: 'zhongxin', name: 'zhengwu_zhongxin', meta: { title: '政务中心' }},
+      { path: 'bankuai', name: 'zhengwu_bankuai', meta: { title: '板块排序' }},
+      { path: 'plan', name: 'zhengwu_plan', meta: { title: '方案计划' }}
+    ]
+  },
+  {
+    path: '/xunlian',
+    name: 'xunlian',
+    component: Layout,
+    redirect: '/xunlian/chengji',
+    meta: {
+      title: '训练管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'chengji', name: 'xunlian_chengji', meta: { title: '训练成绩登记' }},
+      { path: 'search', name: 'xunlian_search', meta: { title: '训练查询修改' }},
+      { path: 'fenxi', name: 'xunlian_fenxi', meta: { title: '成绩统计分析' }},
+      { path: 'gongshi', name: 'xunlian_gongshi', meta: { title: '训练计划公示' }}
+    ]
+  },
+  {
+    path: '/persion',
+    name: 'persion',
+    component: Layout,
+    redirect: '/persion/manage',
+    meta: {
+      title: '人员管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'manage', name: 'person_manage', meta: { title: '人员管理' }},
+      { path: 'fenlei', name: 'person_fenlei', meta: { title: '人员分类管理' }},
+      { path: 'setting', name: 'person_setting', meta: { title: '人员工作时间设置' }}
+    ]
+  },
+  {
+    path: '/jianzhi',
+    name: 'jianzhi',
+    component: Layout,
+    redirect: '/jianzhi/search',
+    meta: {
+      title: '建制管理',
+      icon: 'chart'
+    },
+    children: [
+      { path: 'search', name: 'jianzhi_search', meta: { title: '建制查询' }},
+      { path: 'manage', name: 'jianzhi_manage', meta: { title: '建制人员调停' }}
     ]
   },
   // {

@@ -23,6 +23,16 @@
         </el-col>
         <el-col :span="4" class="persion-list" >
           <div class="user-info">
+            <span style="padding: 10px 0;display: block;">定位时间</span>
+            <el-date-picker
+              v-model="dateTime"
+              value-format="yyyy-MM-dd"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              @change="changeDate()"
+              :picker-options="pickerOptions1">
+            </el-date-picker>
             <p>当前管理员：XXXX</p>
             <p>当前总在线人数：20人</p>
           </div>
@@ -81,6 +91,32 @@
           children: 'children',
           label: 'label'
         },
+        dateTime: new Date(),
+        pickerOptions1: {
+          disabledDate(time) {
+            return time.getTime() > Date.now()
+          },
+          shortcuts: [{
+            text: '今天',
+            onClick(picker) {
+              picker.$emit('pick', new Date())
+            }
+          }, {
+            text: '昨天',
+            onClick(picker) {
+              const date = new Date()
+              date.setTime(date.getTime() - 3600 * 1000 * 24)
+              picker.$emit('pick', date)
+            }
+          }, {
+            text: '一周前',
+            onClick(picker) {
+              const date = new Date()
+              date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
+              picker.$emit('pick', date)
+            }
+          }]
+        },
         dialogFormVisible: false,
         sendUsers: [{ label: '九如科技', key: 1 }, { label: '陈子斌', key: 2 }],
         temp: {
@@ -105,13 +141,13 @@
     },
     methods: {
       getPositionByUserId(id, cb) {
-        getPositionByUserId({ id: id }).then(response => {
+        getPositionByUserId({ id: id, datetime: this.dateTime }).then(response => {
           const paths = response.data.points
           cb(paths)
         })
       },
       getAllUserTypes() {
-        getAllUserTypes().then(response => {
+        getAllUserTypes({ datetime: this.dateTime }).then(response => {
           const types = response.data.points
           const persionTypes = []
           types.forEach((type) => {
@@ -231,6 +267,9 @@
             })
           }
         })
+      },
+      changeDate() {
+        this.getAllUserTypes()
       }
     }
   }
@@ -299,11 +338,11 @@
         .persion-list{
           height: 100%;
           .user-info{
-            height: 100px;
+            height: 160px;
             width: 100%;
           }
           .persion-items{
-            height:calc(100% - 100px);
+            height:calc(100% - 160px);
           }
         }
       }

@@ -220,7 +220,7 @@ export default {
         case '1' :
           getAllRoles().then(response => {
             this.roleList = response.data.result
-            getExistRoleIds({ id: row.Id}).then(res => {
+            getExistRoleIds({ id: row.Id }).then(res => {
               const rows = res.data.result.rows
               rows.forEach((item) => {
                 let selectRow = null
@@ -229,7 +229,7 @@ export default {
                     selectRow = r
                   }
                 })
-                selectRow && this.$refs.multipleTable1[0].toggleRowSelection(selectRow);
+                selectRow && this.$refs.multipleTable1[0].toggleRowSelection(selectRow)
               })
               this.listBindLoading = false
             })
