@@ -10,7 +10,7 @@
                   <p>消息上报列表:</p>
                   <div class="message-dialog">
                     <p class="message-item" v-for="item in msgs">{{item.sendUser}} [{{item.Time}}]: {{item.Content}}
-                      <el-button size="mini" type="danger" style="margin-left: 20px;">消息上报
+                      <el-button size="mini" type="danger" style="margin-left: 20px;" @click="startSend(item)">消息上报
                       </el-button>
                     </p>
                   </div>
@@ -34,12 +34,39 @@
         </el-col>
       </el-row>
     </div>
+    <el-dialog title="消息上报" :visible.sync="dialogFormVisible">
+      <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="100px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="消息提供者" prop="sendUser">
+          <el-input v-model="temp.sendUser" readonly="true"></el-input>
+        </el-form-item>
+        <el-form-item label="消息" prop="Content">
+          <el-input
+            type="textarea"
+            readonly="true"
+            :rows="2"
+            v-model="temp.Content">
+          </el-input>
+        </el-form-item>
+        <el-form-item v-if="temp.img" label="图片" prop="img">
+          <img :src="temp.img" width="200px" height="200px"/>
+        </el-form-item>
+        <el-form-item label="上报对象" prop="userId">
+          <el-select class="filter-item" v-model="temp.userId" placeholder="请选择上报对象">
+            <el-option v-for="item in sendUsers" :key="item.key" :label="item.label" :value="item.key">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">{{$t('table.cancel')}}</el-button>
+        <el-button type="primary" @click="sendMessageToLeader()">{{$t('table.confirm')}}</el-button>
+      </div>
+    </el-dialog>
   </div>
-
 </template>
 
 <script>
-  import { getPositionByUserId, getAllUserTypes, freshMessage } from '@/api/map'
+  import { getPositionByUserId, getAllUserTypes, freshMessage, sendMessage } from '@/api/map'
   export default {
     name: 'index',
     data() {
@@ -53,6 +80,18 @@
         defaultProps: {
           children: 'children',
           label: 'label'
+        },
+        dialogFormVisible: false,
+        sendUsers: [{ label: '九如科技', key: 1 }, { label: '陈子斌', key: 2 }],
+        temp: {
+          Id: '',
+          img: '',
+          Content: '',
+          sendUser: '',
+          userId: ''
+        },
+        rules: {
+          userId: [{ required: true, message: '必填项', trigger: 'change' }]
         }
       }
     },
@@ -172,6 +211,25 @@
           if (cb) cb()
         }).catch(() => {
           if (cb) cb()
+        })
+      },
+      startSend(item) {
+        this.dialogFormVisible = true
+        this.temp = Object.assign({}, item)
+      },
+      sendMessageToLeader() {
+        this.$refs['dataForm'].validate((valid) => {
+          if (valid) {
+            sendMessage({ messageId: this.temp.Id, userId: this.temp.userId }).then((data) => {
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '上报成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+          }
         })
       }
     }

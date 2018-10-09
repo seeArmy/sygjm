@@ -19,4 +19,11 @@ export function freshMessage() {
     method: 'post'
   })
 }
+export function sendMessage(data) {
+  return request({
+    url: '/cms/Message/SendToMessage',
+    method: 'post',
+    params: data
+  })
+}
 

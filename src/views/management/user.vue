@@ -162,7 +162,7 @@ export default {
         UserName: ''
       },
       sexOptions: [{ label: '男', key: 1 }, { label: '女', key: 0 }],
-      bindOptions: [ {label: '绑定角色', key: '1' },
+      bindOptions: [{ label: '绑定角色', key: '1' },
         { label: '绑定菜单', key: '2' },
         { label: '绑定权限', key: '3' }],
       activeName: '1',
